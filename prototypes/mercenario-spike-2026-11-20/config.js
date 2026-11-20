@@ -29,9 +29,12 @@ window.CONFIG = {
   slide_friction: { value: 380, min: 0, max: 1500, step: 10 },    // px/s², quanto o deslize freia
 
   // ---- Combate do jogador ----
-  attack_reach: { value: 18, min: 8, max: 40, step: 1 },          // px à frente do corpo
-  attack_lunge: { value: 90, min: 0, max: 300, step: 5 },         // px/s, avanço do golpe
-  attack_cooldown: { value: 0.26, min: 0.08, max: 0.8, step: 0.01 }, // s entre golpes
+  attack_reach: { value: 22, min: 8, max: 48, step: 1 },          // px, alcance do golpe na direção do mouse
+  attack_dash: { value: 250, min: 0, max: 500, step: 5 },         // px/s, avanço do golpe na direção do mouse
+  dash_time: { value: 0.14, min: 0, max: 0.4, step: 0.01 },       // s em que o avanço ignora o controle
+  air_attacks: { value: 1, min: 0, max: 5, step: 1 },             // golpes com avanço no ar antes de tocar chão/parede
+  attack_cooldown: { value: 0.3, min: 0.08, max: 0.8, step: 0.01 }, // s entre golpes
+  deflect_speed_mult: { value: 1.6, min: 0.5, max: 3, step: 0.1 }, // bala rebatida volta mais rápida
   throw_speed: { value: 430, min: 150, max: 800, step: 10 },      // px/s, objeto arremessado
   pistol_ammo: { value: 3, min: 1, max: 12, step: 1 },            // tiros da pistola pega do chão
   player_bullet_speed: { value: 560, min: 200, max: 1000, step: 10 }, // px/s
