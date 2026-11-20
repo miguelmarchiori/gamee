@@ -32,7 +32,7 @@ window.CONFIG = {
   // ---- Combate do jogador ----
   attack_reach: { value: 22, min: 8, max: 48, step: 1 },          // px, alcance do golpe na direção do mouse
   attack_dash: { value: 420, min: 0, max: 500, step: 5 },         // px/s, avanço do golpe na direção do mouse
-  dash_time: { value: 0.1, min: 0, max: 0.4, step: 0.01 },       // s em que o avanço ignora o controle
+  attack_dash_time: { value: 0.1, min: 0, max: 0.4, step: 0.01 },       // s em que o avanço ignora o controle
   air_attacks: { value: 2, min: 0, max: 5, step: 1 },             // golpes com avanço no ar antes de tocar chão/parede
   attack_cooldown: { value: 0.22, min: 0.08, max: 0.8, step: 0.01 }, // s entre golpes
   deflect_speed_mult: { value: 1.6, min: 0.5, max: 3, step: 0.1 }, // bala rebatida volta mais rápida
@@ -54,12 +54,12 @@ window.CONFIG = {
   gunner_cooldown: { value: 1.1, min: 0.3, max: 3, step: 0.05 },  // s entre tiros
   enemy_bullet_speed: { value: 290, min: 100, max: 700, step: 10 },// px/s
 
-  // ---- Câmera lenta (SHIFT segurado) ----
-  slowmo_enabled: { value: 1, min: 0, max: 1, step: 1 },          // 1 liga, 0 desliga
-  slowmo_world_scale: { value: 0.3, min: 0.1, max: 1, step: 0.05 },  // velocidade do mundo na câmera lenta
-  slowmo_player_scale: { value: 0.6, min: 0.1, max: 1, step: 0.05 }, // velocidade do jogador na câmera lenta
-  slowmo_max: { value: 3, min: 0.5, max: 10, step: 0.25 },        // s de câmera lenta com a barra cheia
-  slowmo_recharge: { value: 0.5, min: 0, max: 3, step: 0.05 },    // s de barra recuperados por segundo
+  // ---- Dash (SHIFT) ----
+  dash_speed: { value: 480, min: 150, max: 900, step: 10 },       // px/s durante o dash
+  dash_duration: { value: 0.13, min: 0.05, max: 0.4, step: 0.01 },// s de dash (invencível)
+  dash_end_keep: { value: 0.55, min: 0, max: 1, step: 0.05 },     // fração da velocidade mantida ao fim do dash
+  dash_cooldown: { value: 0.3, min: 0, max: 1.5, step: 0.05 },    // s entre dashes
+  air_dashes: { value: 2, min: 0, max: 5, step: 1 },              // dashes no ar antes de tocar chão ou parede
 
   // ---- Sensação ----
   restart_delay: { value: 0.45, min: 0.1, max: 1.5, step: 0.05 }, // s entre morrer e a sala recomeçar
