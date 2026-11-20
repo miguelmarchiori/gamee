@@ -17,6 +17,8 @@ window.CONFIG = {
   fall_gravity_mult: { value: 1.7, min: 1, max: 3, step: 0.05 },  // queda mais rápida que a subida
   jump_cut_gravity_mult: { value: 2.6, min: 1, max: 5, step: 0.1 }, // soltar o pulo cedo = pulinho
   max_fall_speed: { value: 520, min: 200, max: 900, step: 10 },   // px/s
+  air_jumps: { value: 1, min: 0, max: 3, step: 1 },               // pulos extras no ar (1 = pulo duplo)
+  double_jump_mult: { value: 0.9, min: 0.4, max: 1.3, step: 0.05 },// força do pulo duplo (fração do pulo normal)
   coyote_time: { value: 0.1, min: 0, max: 0.25, step: 0.01 },     // s, pulo vale logo após sair da borda
   jump_buffer: { value: 0.12, min: 0, max: 0.3, step: 0.01 },     // s, pulo apertado antes de pousar vale
 
