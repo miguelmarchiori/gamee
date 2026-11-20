@@ -11,6 +11,6 @@
 
 **Conteúdo:** uma sala com 7 inimigos (3 capangas de faca, 4 atiradores com laser de mira), garrafas, uma faca e as pistolas que os atiradores deixam cair.
 
-**Status:** em andamento, aguardando o playtest da equipe.
+**Status:** concluído (SIM: o loop é divertido).
 
-**Resultados:** preencher depois do teste (ver `SPIKE-NOTE.md`).
+**Resultados:** ver `SPIKE-NOTE.md`.
