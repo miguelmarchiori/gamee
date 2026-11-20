@@ -7,7 +7,7 @@
 
 **Como rodar:** abra `index.html` no navegador (funciona offline). Todos os valores de ajuste estão em `config.js`.
 
-**Controles:** setas/A D para mover · Espaço/Z/W para pular (encostado na parede faz o pulo na parede) · Baixo/S correndo para deslizar · X/J para golpear · C/K para pegar, arremessar e atirar · R para recomeçar.
+**Controles:** A D para mover · W/Espaço para pular (na parede, pulo na parede) · S no chão rola (invencível), no ar cai rápido · clique esquerdo golpeia com avanço para onde o mouse aponta (2 avanços no ar) · clique direito/E pega, arremessa e atira · Shift segurado ativa a câmera lenta · R recomeça.
 
 **Conteúdo:** uma sala com 7 inimigos (3 capangas de faca, 4 atiradores com laser de mira), garrafas, uma faca e as pistolas que os atiradores deixam cair.
 

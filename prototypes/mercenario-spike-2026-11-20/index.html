@@ -29,12 +29,12 @@ const PIXEL = true;
 const FONT = 'monospace';
 const TITLE = 'MERCENÁRIO';
 const CONTROLS = [
-  'A D: mover      W / Espaço: pular      S correndo: deslizar',
-  'Pule encostado na parede para escalar',
-  'MOUSE: mirar      CLIQUE ESQUERDO: golpe com avanço',
-  'Golpeie uma bala na hora certa para rebatê-la',
-  'CLIQUE DIREITO: pegar / arremessar / atirar',
-  'R: recomeçar sala   P: pausa   M: som',
+  'A D / SETAS: mover      W / ESPAÇO: pular (na parede: pulo na parede)',
+  'S no chão: rolar (invencível)      S no ar: cair rápido',
+  'CLIQUE ESQUERDO: golpe com avanço para onde o mouse aponta',
+  'no ar: 2 avanços (recarregam no chão ou na parede) · golpeie balas para rebater',
+  'CLIQUE DIREITO / E: pegar, arremessar, atirar      SHIFT segurado: câmera lenta',
+  'R: recomeçar sala   ESC / P: pausa   M: som',
 ];
 const clock = window.GAME_CLOCK || { now: () => performance.now() / 1000 };
 const CHEAP = params.get('render') === 'cheap';
@@ -126,7 +126,8 @@ const sfx = {
   jump: () => tone(420, 0.08, 'square', 0.1, 1.6),
   walljump: () => tone(520, 0.09, 'square', 0.12, 1.5),
   land: () => noise(0.05, 0.12, 300),
-  slide: () => noise(0.25, 0.12, 1500),
+  roll: () => noise(0.25, 0.12, 1500),
+  slowIn: () => tone(500, 0.35, 'sine', 0.15, 0.4),
   swing: () => { noise(0.09, 0.28, 3000); tone(900, 0.07, 'sawtooth', 0.06, 0.4); },
   kill: () => { noise(0.2, 0.4, 150); tone(90, 0.25, 'sawtooth', 0.25, 0.4); },
   deflect: () => { tone(1800, 0.12, 'square', 0.15, 0.6); noise(0.08, 0.3, 4000); },
@@ -239,14 +240,14 @@ function reset() {
 }
 function restartRoom() {
   const p = { type: 'player', x: 3 * TS + 3, y: 16 * TS - 20.01, w: 10, h: 20, vx: 0, vy: 0, f: 1, alive: true,
-    coyote: 0, buffer: 0, wallLock: 0, dashT: 0, attackT: 0, attackCd: 0, slideT: 0, sliding: false, aim: 0, aimY: 0,
+    coyote: 0, buffer: 0, wallLock: 0, dashT: 0, attackT: 0, attackCd: 0, rollT: 0, rolling: false, aim: 0, aimY: 0,
     airAttacks: tune.air_attacks, held: null, grounded: true, phase: 0, landed: 0, scarf: [], ghostTick: 0 };
   for (let i = 0; i < 7; i++) p.scarf.push({ x: p.x, y: p.y + 6 });
   Object.assign(state, {
     t: 0, p, enemies: SPAWNS.map(s => makeActor(...s)),
     items: ITEMS.map(([type, c, r]) => ({ type, x: c * TS + 4, y: r * TS - 6, w: 8, h: 6, vx: 0, vy: 0, mode: 'ground', ammo: 0, spin: 0 })),
     bullets: [], parts: [], decals: [], ghosts: [], slashes: [], shake: 0, hitstop: 0, flash: 0, deadT: 0, clearT: 0,
-    cleared: false, kills: 0, cam: { x: 0, y: LH - H }, score: 0, glitch: 0.25,
+    cleared: false, kills: 0, cam: { x: 0, y: LH - H }, score: 0, glitch: 0.25, slowMeter: tune.slowmo_max, slowOn: false,
   });
   state.total = state.enemies.length;
 }
@@ -260,8 +261,8 @@ function killEnemy(e, dirX, dirY = -0.4) {
   sfx.kill(); events.push({ type: 'kill', enemy: e.type });
 }
 function killPlayer(dirX) {
-  const p = state.p; if (!p.alive || state.cleared) return;
-  if (p.sliding) endSlide(p);
+  const p = state.p; if (!p.alive || state.cleared || p.rolling) return; // rolando = invencível
+  if (p.rolling) endRoll(p);
   p.alive = false; state.deadT = tune.restart_delay; state.deaths++; state.shake = tune.shake * 1.5; state.glitch = tune.restart_delay;
   gore(p.x + p.w / 2, p.y + 8, dirX, 34); p.vx = dirX * 160; p.vy = -150;
   p.held = null;
@@ -288,7 +289,7 @@ function updatePlayer(dt) {
   const left = anyDown('ArrowLeft', 'KeyA'), right = anyDown('ArrowRight', 'KeyD');
   const dir = (right ? 1 : 0) - (left ? 1 : 0);
   const jumpHit = anyHit('Space', 'KeyW', 'ArrowUp', 'KeyZ'), jumpHeld = anyDown('Space', 'KeyW', 'ArrowUp', 'KeyZ');
-  const downHit = anyHit('ArrowDown', 'KeyS', 'ShiftLeft');
+  const downHit = anyHit('ArrowDown', 'KeyS');
   const g = 2 * tune.jump_height / (tune.jump_apex_time ** 2), v0 = 2 * tune.jump_height / tune.jump_apex_time;
 
   const wasGround = p.grounded;
@@ -300,59 +301,69 @@ function updatePlayer(dt) {
   const wallL = rectHits(p.x - 2, p.y + 3, 2, p.h - 6), wallR = rectHits(p.x + p.w, p.y + 3, 2, p.h - 6);
   p.aim = aimAngle(p);
 
-  // Deslize
-  if (downHit && p.grounded && !p.sliding && Math.abs(p.vx) > 60) {
-    p.sliding = true; p.slideT = tune.slide_time; p.h = 10; p.y += 10;
-    p.vx = sign(p.vx) * Math.max(Math.abs(p.vx), tune.slide_speed); p.f = sign(p.vx); sfx.slide();
+  // Rolamento (chão) e queda rápida (ar)
+  if (downHit && p.grounded && !p.rolling) {
+    const d = dir !== 0 ? dir : p.f;
+    p.rolling = true; p.rollT = tune.roll_time; p.h = 10; p.y += 10;
+    p.vx = d * Math.max(Math.abs(p.vx), tune.roll_speed); p.f = d; sfx.roll();
+  } else if (downHit && !p.grounded && !p.rolling && p.dashT <= 0) {
+    p.vy = Math.max(p.vy, tune.max_fall_speed * 0.85); p.noCut = false;
   }
-  if (p.sliding) {
-    p.slideT -= dt;
-    p.vx = approach(p.vx, 0, tune.slide_friction * dt);
+  if (p.rolling) {
+    p.rollT -= dt;
+    p.vx = approach(p.vx, 0, tune.roll_friction * dt);
     if (p.grounded && rng() < 0.6) state.parts.push({ x: p.x + (p.f > 0 ? 0 : p.w), y: p.y + p.h, vx: -p.f * 50 * rng(), vy: -40 * rng(), life: 0.25, c: '#8a7ab0', s: 1, stick: false });
     const canStand = !rectHits(p.x, p.y - 10, p.w, 20);
-    if ((p.slideT <= 0 || Math.abs(p.vx) < 40 || !p.grounded) && canStand) endSlide(p);
+    if ((p.rollT <= 0 || !p.grounded) && canStand) endRoll(p);
   }
 
   // Horizontal
-  if (!p.sliding && p.wallLock <= 0 && p.dashT <= 0) {
+  if (!p.rolling && p.wallLock <= 0 && p.dashT <= 0) {
     const target = dir * tune.run_speed;
     let a;
     if (dir !== 0 && Math.abs(p.vx) > tune.run_speed && sign(p.vx) === dir) a = p.grounded ? tune.ground_friction * 0.5 : 120;
     else if (dir !== 0) a = p.grounded ? tune.ground_accel : tune.air_accel;
-    else a = p.grounded ? tune.ground_friction : tune.air_accel * 0.4;
+    else a = p.grounded ? tune.ground_friction : tune.air_drag; // no ar, solto: o embalo dura
     p.vx = approach(p.vx, target, a * dt);
     if (dir !== 0 && p.attackT <= 0) p.f = dir;
   }
 
   // Pulo, pulo na parede
-  if (p.buffer > 0 && (p.grounded || p.coyote > 0) && (!p.sliding || !rectHits(p.x, p.y - 10, p.w, 20))) {
-    if (p.sliding) endSlide(p);
+  if (p.buffer > 0 && (p.grounded || p.coyote > 0) && (!p.rolling || !rectHits(p.x, p.y - 10, p.w, 20))) {
+    if (p.rolling) endRoll(p);
     p.vy = -v0; p.buffer = 0; p.coyote = 0; p.grounded = false; sfx.jump();
     sparks(p.x + p.w / 2, p.y + p.h, '#6a5a8a', 3);
-  } else if (p.buffer > 0 && !p.grounded && (wallL || wallR) && !p.sliding) {
+  } else if (p.buffer > 0 && !p.grounded && (wallL || wallR) && !p.rolling) {
     const away = wallL ? 1 : -1;
     p.vy = -v0 * tune.wall_jump_up; p.vx = away * tune.wall_jump_push; p.f = away;
-    p.wallLock = tune.wall_jump_lock; p.buffer = 0; p.airAttacks = tune.air_attacks; sfx.walljump();
+    p.wallLock = tune.wall_jump_lock; p.buffer = 0; p.airAttacks = tune.air_attacks; p.noCut = true; sfx.walljump();
     sparks(wallL ? p.x : p.x + p.w, p.y + p.h / 2, PAL.neonB, 6);
   }
   let grav = g;
-  if (p.dashT > 0) grav *= 0.35; // o avanço do golpe flutua um instante
+  if (p.vy >= 0) p.noCut = false;
+  if (p.dashT > 0) grav = 0; // durante o avanço a gravidade some: o golpe vai reto para onde mirou
   else if (p.vy > 0) grav *= tune.fall_gravity_mult;
-  else if (!jumpHeld) grav *= tune.jump_cut_gravity_mult;
+  else if (!jumpHeld && !p.noCut) grav *= tune.jump_cut_gravity_mult;
   p.vy = Math.min(p.vy + grav * dt, tune.max_fall_speed);
   p.wallSliding = !p.grounded && p.vy > 0 && ((wallL && dir < 0) || (wallR && dir > 0));
   if (p.wallSliding) { p.vy = Math.min(p.vy, tune.wall_slide_speed); p.f = wallL ? 1 : -1; p.airAttacks = tune.air_attacks; }
 
   // Golpe na direção do mouse
-  if (anyHit('Mouse0', 'KeyX', 'KeyJ') && p.attackCd <= 0 && !p.sliding) {
+  if (anyHit('Mouse0', 'KeyX', 'KeyJ') && p.attackCd <= 0 && (!p.rolling || !rectHits(p.x, p.y - 10, p.w, 20))) {
+    if (p.rolling) endRoll(p);
     const ang = p.aim, cs = Math.cos(ang), sn = Math.sin(ang);
     p.attackT = 0.2; p.attackCd = tune.attack_cooldown; p.f = cs >= 0 ? 1 : -1;
     p.aimY = sn < -0.55 ? -1 : sn > 0.55 ? 1 : 0;
-    const full = p.grounded || p.airAttacks > 0, d = tune.attack_dash * (full ? 1 : 0.35);
-    if (!p.grounded && full) p.airAttacks--;
-    p.vx = cs * d;
-    if (!p.grounded || sn < -0.2) p.vy = sn * d * 0.85;
-    p.dashT = tune.dash_time;
+    const launch = p.grounded || p.airAttacks > 0, d = tune.attack_dash;
+    if (!p.grounded && launch) p.airAttacks--;
+    if (launch) { // avanço completo em qualquer direção: cima, diagonal, baixo
+      p.vx = cs * d;
+      if (!(p.grounded && sn > 0)) p.vy = sn * d;
+      p.dashT = tune.dash_time; p.noCut = true;
+    } else { // sem carga no ar: golpe curto que segura a queda um instante
+      p.vx = cs * d * 0.45; p.vy = Math.min(p.vy, 20); p.dashT = 0.04;
+    }
+    if (p.grounded && sn < -0.2) p.grounded = false;
     state.slashes.push({ ang, t: 0.16, max: 0.16 });
     sfx.swing();
   }
@@ -370,10 +381,9 @@ function updatePlayer(dt) {
       }
     }
   }
-  if (p.sliding) for (const e of state.enemies) if (e.alive && overlap(p, e)) killEnemy(e, p.f);
 
   // Pegar / arremessar / atirar
-  if (anyHit('Mouse2', 'KeyC', 'KeyK')) {
+  if (anyHit('Mouse2', 'KeyE', 'KeyC', 'KeyK')) {
     const cs = Math.cos(p.aim), sn = Math.sin(p.aim);
     if (p.held) {
       const it = p.held;
@@ -404,16 +414,16 @@ function updatePlayer(dt) {
 
   // Rastro (afterimages) quando rápido
   p.ghostTick++;
-  if ((p.dashT > 0 || p.sliding || p.wallLock > 0 || Math.abs(p.vx) > tune.run_speed * 1.15) && p.ghostTick % 2 === 0) {
+  if ((p.dashT > 0 || p.rolling || p.wallLock > 0 || Math.abs(p.vx) > tune.run_speed * 1.15) && p.ghostTick % 2 === 0) {
     state.ghosts.push({ ...p, scarf: null, held: null, life: 0.22, max: 0.22, c: state.ghosts.length % 2 ? PAL.neonB : PAL.neonA });
     if (state.ghosts.length > 14) state.ghosts.shift();
   }
 
   // Cachecol
-  let ax = p.x + p.w / 2 - p.f * 2, ay = p.y + (p.sliding ? 4 : 5);
+  let ax = p.x + p.w / 2 - p.f * 2, ay = p.y + (p.rolling ? 4 : 5);
   for (const s of p.scarf) { s.x += (ax - s.x) * 0.5; s.y += (ay - s.y) * 0.5 + 0.35; ax = s.x - p.f * 2 - p.vx * 0.005; ay = s.y + Math.sin(state.t * 14 + s.x * 0.3) * 0.4; }
 }
-function endSlide(p) { if (!p.sliding) return; p.sliding = false; p.h = 20; p.y -= 10; }
+function endRoll(p) { if (!p.rolling) return; p.rolling = false; p.h = 20; p.y -= 10; }
 
 // ---- Enemies --------------------------------------------------------------------------
 function updateEnemies(dt) {
@@ -498,7 +508,7 @@ function updateBullets(dt) {
     if (b.dead) continue;
     b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
     if (solidAt(b.x, b.y) || b.life <= 0) { b.dead = true; sparks(b.x, b.y, PAL.neonC, 3); continue; }
-    if (b.enemy) { if (p.alive && b.x > p.x && b.x < p.x + p.w && b.y > p.y && b.y < p.y + p.h) { b.dead = true; killPlayer(sign(b.vx)); } }
+    if (b.enemy) { if (p.alive && !p.rolling && b.x > p.x && b.x < p.x + p.w && b.y > p.y && b.y < p.y + p.h) { b.dead = true; killPlayer(sign(b.vx)); } }
     else for (const e of state.enemies) if (e.alive && b.x > e.x - 1 && b.x < e.x + e.w + 1 && b.y > e.y && b.y < e.y + e.h) { b.dead = true; killEnemy(e, sign(b.vx)); break; }
   }
   state.bullets = state.bullets.filter(b => !b.dead);
@@ -537,9 +547,12 @@ function paintFigure(a, pal, pose) {
     r(-10, -4, 16, 4, pal.coat); r(-10, -4, 16, 1, pal.coatHi); r(-13, -3, 3, 3, pal.boots); r(6, -5, 5, 5, pal.skin); r(6, -5, 5, 2, pal.hair);
     return;
   }
-  if (pose === 'slide') {
-    r(-12, -6, 5, 3, pal.coatD); r(-8, -9, 10, 6, pal.coat); r(-8, -9, 10, 1, pal.coatHi); r(2, -5, 8, 3, pal.pants); r(10, -6, 3, 4, pal.boots); r(10, -6, 3, 1, pal.bootsHi);
-    head(-10, -15); r(-2, -4, 4, 2, pal.glove);
+  if (pose === 'roll') { // rolamento: uma bola que gira, cabeça e botas em lados opostos
+    const k = 1 - Math.max(0, a.rollT || 0) / tune.roll_time, ang = k * Math.PI * 2 - Math.PI / 2;
+    const ox = Math.round(Math.cos(ang) * 4), oy = Math.round(Math.sin(ang) * 4);
+    r(-5, -11, 10, 10, pal.coat); r(-4, -12, 8, 1, pal.coat); r(-4, -1, 8, 1, pal.coat); r(-5, -11, 10, 1, pal.coatHi);
+    r(-1 - ox, -7 - oy, 4, 3, pal.boots); r(-2 + ox, -8 + oy, 5, 5, pal.skin); r(-2 + ox, -8 + oy, 5, 1, pal.hair);
+    r(-4, -6, 8, 1, pal.accent);
     return;
   }
   const t = a.phase || 0, run = pose === 'run', air = pose === 'air', wall = pose === 'wall';
@@ -713,7 +726,7 @@ function drawSlashes() {
 function poseOf(a) {
   if (!a.alive) return 'dead';
   if (a.type === 'player') {
-    if (a.sliding) return 'slide'; if (a.attackT > 0.04) return 'attack'; if (a.wallSliding) return 'wall';
+    if (a.rolling) return 'roll'; if (a.attackT > 0.04) return 'attack'; if (a.wallSliding) return 'wall';
     if (!a.grounded) return 'air'; return Math.abs(a.vx) > 20 ? 'run' : 'idle';
   }
   if (a.type === 'gunner') return a.ai === 'aim' ? 'aim' : 'idle';
@@ -756,6 +769,10 @@ function drawWorld() {
   postFX();
 }
 function postFX() {
+  if (state.slowOn) { // câmera lenta: tela puxa para o ciano, bordas escurecem
+    ctx.fillStyle = 'rgba(46,230,255,0.10)'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(5,3,10,0.35)'; ctx.fillRect(0, 0, W, 10); ctx.fillRect(0, H - 10, W, 10);
+  }
   if (state.flash > 0) { // aberração cromática e clarão no abate
     ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.35;
     ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 2, 0, W, H);
@@ -788,8 +805,13 @@ function drawHUD() {
   shadowText(`${state.t.toFixed(2)}s`, W - 8, 8, 8, '#fff', 'right');
   if (best !== null) shadowText(`RECORDE ${best.toFixed(2)}s`, W - 70, 8, 8, PAL.neonC, 'right');
   if (p.held) shadowText(p.held.type === 'pistol' ? `PISTOLA x${p.held.ammo}` : p.held.type === 'knife' ? 'FACA' : 'GARRAFA', W / 2, 8, 8, PAL.neonC);
+  if (tune.slowmo_enabled > 0) { // barra da câmera lenta
+    const bw = 60, fr = state.slowMeter / tune.slowmo_max;
+    ctx.fillStyle = PAL.outline; ctx.fillRect(W / 2 - bw / 2 - 1, H - 9, bw + 2, 5);
+    ctx.fillStyle = state.slowOn ? '#ffffff' : PAL.neonB; ctx.fillRect(W / 2 - bw / 2, H - 8, Math.round(bw * fr), 3);
+  }
   if (!p.alive) shadowText('MORTO', W / 2, H / 2, 16, PAL.neonA);
-  if (state.t < 4 && state.deaths === 0) shadowText('Limpe a sala. Mire com o mouse. Um golpe mata.', W / 2, H - 14, 8, '#d8d0f0');
+  if (state.t < 4 && state.deaths === 0) shadowText('Limpe a sala. Mire com o mouse. Um golpe mata.', W / 2, H - 20, 8, '#d8d0f0');
 }
 
 // ---- Scene table ----------------------------------------------------------------------
@@ -799,11 +821,11 @@ const scenes = {
     draw() {
       camX = 0; camY = 0; clear(PAL.sky1);
       ctx.fillStyle = PAL.tile; ctx.fillRect(0, 180, W, 90); ctx.fillStyle = PAL.tileEdge; ctx.fillRect(0, 180, W, 1);
-      const list = [['Mercenário', 'player', 'idle'], ['Correndo', 'player', 'run'], ['Deslize', 'player', 'slide'], ['Golpe', 'player', 'attack'],
+      const list = [['Mercenário', 'player', 'idle'], ['Correndo', 'player', 'run'], ['Rolamento', 'player', 'roll'], ['Golpe', 'player', 'attack'],
         ['Capanga', 'thug', 'idle'], ['Capanga ataca', 'thug', 'slash'], ['Atirador', 'gunner', 'idle'], ['Atirador mira', 'gunner', 'aim']];
       list.forEach(([name, type, pose], i) => {
         const a = { type, x: 24 + i * 56, y: 160, w: 10, h: 20, f: 1, phase: 1, landed: 0, vx: pose === 'run' ? 160 : 0, aimY: 0 };
-        if (pose === 'slide') { a.y = 170; a.h = 10; }
+        if (pose === 'roll') { a.y = 170; a.h = 10; a.rollT = 0.1; }
         drawFigure(a, PAL[type], pose); text(name, a.x + 5, 196 + (i % 2) * 10, 7, '#fff');
       });
       [['Garrafa', 'bottle'], ['Faca', 'knife'], ['Pistola', 'pistol']].forEach(([n, type], i) => {
@@ -833,8 +855,13 @@ const scenes = {
       if (pressed('KeyR')) { restartRoom(); return; }
       state.shake = Math.max(0, state.shake - dt * 20); state.flash = Math.max(0, state.flash - dt); state.glitch = Math.max(0, state.glitch - dt);
       if (state.hitstop > 0) { state.hitstop -= dt; return; }
-      if (state.p.alive && !state.cleared) state.t += dt; else state.tFx = (state.tFx || 0) + dt;
-      updatePlayer(dt); updateEnemies(dt); updateItems(dt); updateBullets(dt); updateParts(dt);
+      const slow = tune.slowmo_enabled > 0 && anyDown('ShiftLeft', 'ShiftRight') && state.slowMeter > 0.05 && state.p.alive && !state.cleared;
+      if (slow && !state.slowOn) sfx.slowIn();
+      state.slowOn = slow;
+      state.slowMeter = slow ? Math.max(0, state.slowMeter - dt) : Math.min(tune.slowmo_max, state.slowMeter + dt * tune.slowmo_recharge);
+      const wdt = dt * (slow ? tune.slowmo_world_scale : 1), pdt = dt * (slow ? tune.slowmo_player_scale : 1);
+      if (state.p.alive && !state.cleared) state.t += dt;
+      updatePlayer(pdt); updateEnemies(wdt); updateItems(wdt); updateBullets(wdt); updateParts(wdt);
       const p = state.p, tx = p.x + p.w / 2 - W / 2 + p.f * tune.camera_lookahead + (mouse.seen ? (mouse.x - W / 2) * 0.15 : 0);
       state.cam.x += (Math.max(0, Math.min(LW - W, tx)) - state.cam.x) * Math.min(1, dt * 6);
       state.cam.y = LH - H;
