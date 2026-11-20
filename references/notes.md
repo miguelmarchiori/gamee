@@ -1,0 +1,1 @@
+- zack-reddman.png: take: Zack Reddman (desenho da equipe): cabelo preto bagunçado caindo na testa, olho direito verde, olho esquerdo branco (cego), queimadura avermelhada no lado esquerdo do rosto · é o rosto oficial do personagem
