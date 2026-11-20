@@ -31,9 +31,8 @@ const TITLE = 'MERCENÁRIO';
 const CONTROLS = [
   'A D / SETAS: mover      W / ESPAÇO: pular (na parede: pulo na parede)',
   'S no chão: rolar (invencível)      S no ar: cair rápido',
-  'CLIQUE ESQUERDO: golpe com avanço para onde o mouse aponta',
-  'no ar: 2 avanços (recarregam no chão ou na parede) · golpeie balas para rebater',
-  'SHIFT: dash (WASD escolhe a direção, sem tecla vai para o mouse) · 2 no ar',
+  'CLIQUE ESQUERDO: golpe na direção do mouse · acerte balas para rebatê-las',
+  'SHIFT: dash pro lado · SHIFT+W: pra cima · W+D/A: diagonal · 2 no ar',
   'CLIQUE DIREITO / E: pegar, arremessar, atirar',
   'R: recomeçar sala   ESC / P: pausa   M: som',
 ];
@@ -357,15 +356,26 @@ function updatePlayer(dt) {
   if (anyHit('ShiftLeft', 'ShiftRight') && p.dashCd <= 0 && (p.grounded || p.airDashes > 0) && (!p.rolling || !rectHits(p.x, p.y - 10, p.w, 20))) {
     if (p.rolling) endRoll(p);
     const ky = (anyDown('KeyW', 'ArrowUp') ? -1 : 0) + (anyDown('KeyS', 'ArrowDown') ? 1 : 0);
-    let ang = (dir !== 0 || ky !== 0) ? Math.atan2(ky, dir) : p.aim;
+    let ang = (dir !== 0 || ky !== 0) ? Math.atan2(ky, dir) : (p.f > 0 ? 0 : Math.PI); // sem tecla: pro lado que está olhando
     if (p.grounded && Math.sin(ang) > 0.2) ang = Math.cos(ang) >= 0 ? 0 : Math.PI; // no chão, para baixo vira horizontal
     if (!p.grounded) p.airDashes--;
     p.vx = Math.cos(ang) * tune.dash_speed; p.vy = Math.sin(ang) * tune.dash_speed;
     p.dashT = tune.dash_duration; p.dashKind = 'dash'; p.invT = tune.dash_duration + 0.04; p.dashCd = tune.dash_cooldown; p.noCut = true;
+    p.dashGrace = (dir === 0 && ky === 0) ? 0.07 : 0; // apertou Shift antes da direção: ainda dá para virar
     if (Math.abs(Math.cos(ang)) > 0.2) p.f = Math.cos(ang) > 0 ? 1 : -1;
     if (p.grounded && Math.sin(ang) < -0.2) p.grounded = false;
     sfx.dash(); sparks(p.x + p.w / 2, p.y + p.h / 2, PAL.neonB, 8); state.shake = Math.max(state.shake, 1);
     events.push({ type: 'dash' });
+  }
+  if (p.dashKind === 'dash' && p.dashGrace > 0) {
+    p.dashGrace -= dt;
+    const ky = (anyDown('KeyW', 'ArrowUp') ? -1 : 0) + (anyDown('KeyS', 'ArrowDown') ? 1 : 0);
+    if (dir !== 0 || ky !== 0) {
+      let ang = Math.atan2(ky, dir);
+      if (p.grounded && Math.sin(ang) > 0.2) ang = Math.cos(ang) >= 0 ? 0 : Math.PI;
+      p.vx = Math.cos(ang) * tune.dash_speed; p.vy = Math.sin(ang) * tune.dash_speed; p.dashGrace = 0;
+      if (Math.abs(Math.cos(ang)) > 0.2) p.f = Math.cos(ang) > 0 ? 1 : -1;
+    }
   }
 
   // Golpe na direção do mouse
@@ -381,7 +391,7 @@ function updatePlayer(dt) {
       if (!(p.grounded && sn > 0)) p.vy = sn * d;
       p.dashT = tune.attack_dash_time; p.dashKind = 'attack'; p.noCut = true;
     } else { // sem carga no ar: golpe curto que segura a queda um instante
-      p.vx = cs * d * 0.45; p.vy = Math.min(p.vy, 20); p.dashT = 0.04; p.dashKind = 'attack';
+      p.vx = cs * d * 0.45; p.vy = Math.min(p.vy, 60); p.dashT = 0.04; p.dashKind = 'attack';
     }
     if (p.grounded && sn < -0.2) p.grounded = false;
     state.slashes.push({ ang, t: 0.16, max: 0.16 });

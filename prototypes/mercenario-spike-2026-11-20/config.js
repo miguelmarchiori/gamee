@@ -31,9 +31,9 @@ window.CONFIG = {
 
   // ---- Combate do jogador ----
   attack_reach: { value: 22, min: 8, max: 48, step: 1 },          // px, alcance do golpe na direção do mouse
-  attack_dash: { value: 420, min: 0, max: 500, step: 5 },         // px/s, avanço do golpe na direção do mouse
-  attack_dash_time: { value: 0.1, min: 0, max: 0.4, step: 0.01 },       // s em que o avanço ignora o controle
-  air_attacks: { value: 2, min: 0, max: 5, step: 1 },             // golpes com avanço no ar antes de tocar chão/parede
+  attack_dash: { value: 170, min: 0, max: 500, step: 5 },         // px/s, passo curto do golpe na direção do mouse
+  attack_dash_time: { value: 0.06, min: 0, max: 0.4, step: 0.01 },       // s em que o avanço ignora o controle
+  air_attacks: { value: 1, min: 0, max: 5, step: 1 },             // golpes com avanço no ar antes de tocar chão/parede
   attack_cooldown: { value: 0.22, min: 0.08, max: 0.8, step: 0.01 }, // s entre golpes
   deflect_speed_mult: { value: 1.6, min: 0.5, max: 3, step: 0.1 }, // bala rebatida volta mais rápida
   throw_speed: { value: 430, min: 150, max: 800, step: 10 },      // px/s, objeto arremessado
