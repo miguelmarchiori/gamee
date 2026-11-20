@@ -31,8 +31,8 @@ const TITLE = 'MERCENÁRIO';
 const CONTROLS = [
   'A D / SETAS: mover      W / ESPAÇO: pular (na parede: pulo na parede)',
   'S no chão: rolar (invencível)      S no ar: cair rápido',
-  'CLIQUE ESQUERDO: golpe na direção do mouse · acerte balas para rebatê-las',
-  'SHIFT: dash pro lado · SHIFT+W: pra cima · W+D/A: diagonal · 2 no ar',
+  'CLIQUE ESQUERDO: soco na direção do mouse · acerte balas para rebatê-las',
+  'SHIFT: dash na direção do mouse (invencível) · 2 no ar',
   'CLIQUE DIREITO / E: pegar, arremessar, atirar',
   'R: recomeçar sala   ESC / P: pausa   M: som',
 ];
@@ -129,6 +129,7 @@ const sfx = {
   roll: () => noise(0.25, 0.12, 1500),
   dash: () => { noise(0.12, 0.25, 2000); tone(300, 0.12, 'sawtooth', 0.08, 2.5); },
   swing: () => { noise(0.09, 0.28, 3000); tone(900, 0.07, 'sawtooth', 0.06, 0.4); },
+  punch: () => { noise(0.06, 0.22, 900); tone(170, 0.07, 'square', 0.12, 0.5); },
   kill: () => { noise(0.2, 0.4, 150); tone(90, 0.25, 'sawtooth', 0.25, 0.4); },
   deflect: () => { tone(1800, 0.12, 'square', 0.15, 0.6); noise(0.08, 0.3, 4000); },
   throw: () => tone(700, 0.1, 'triangle', 0.15, 0.5),
@@ -239,14 +240,14 @@ function reset() {
   restartRoom();
 }
 function restartRoom() {
-  const p = { type: 'player', x: 3 * TS + 3, y: 16 * TS - 20.01, w: 10, h: 20, vx: 0, vy: 0, f: 1, alive: true,
+  const p = { type: 'player', liveFist: true, x: 3 * TS + 3, y: 16 * TS - 20.01, w: 10, h: 20, vx: 0, vy: 0, f: 1, alive: true,
     coyote: 0, buffer: 0, wallLock: 0, dashT: 0, attackT: 0, attackCd: 0, rollT: 0, rolling: false, aim: 0, aimY: 0,
     airAttacks: tune.air_attacks, airDashes: tune.air_dashes, dashCd: 0, invT: 0, dashKind: '', held: null, grounded: true, phase: 0, landed: 0, scarf: [], ghostTick: 0 };
   for (let i = 0; i < 7; i++) p.scarf.push({ x: p.x, y: p.y + 6 });
   Object.assign(state, {
     t: 0, p, enemies: SPAWNS.map(s => makeActor(...s)),
     items: ITEMS.map(([type, c, r]) => ({ type, x: c * TS + 4, y: r * TS - 6, w: 8, h: 6, vx: 0, vy: 0, mode: 'ground', ammo: 0, spin: 0 })),
-    bullets: [], parts: [], decals: [], ghosts: [], slashes: [], shake: 0, hitstop: 0, flash: 0, deadT: 0, clearT: 0,
+    bullets: [], parts: [], decals: [], ghosts: [], slashes: [], rings: [], shake: 0, hitstop: 0, flash: 0, deadT: 0, clearT: 0,
     cleared: false, kills: 0, cam: { x: 0, y: LH - H }, score: 0, glitch: 0.25,
   });
   state.total = state.enemies.length;
@@ -257,6 +258,7 @@ function killEnemy(e, dirX, dirY = -0.4) {
   state.kills++; state.score = state.kills;
   state.hitstop = tune.hitstop; state.shake = tune.shake; state.flash = 0.12;
   gore(e.x + e.w / 2, e.y + 8, dirX, 28);
+  state.rings.push({ x: e.x + e.w / 2, y: e.y + 8, t: 0.25, max: 0.25, rot: rng() * 3 });
   if (e.type === 'gunner') state.items.push({ type: 'pistol', x: e.x + 1, y: e.y + 8, w: 8, h: 5, vx: dirX * 60, vy: -160, mode: 'ground', ammo: tune.pistol_ammo, spin: 0 });
   sfx.kill(); events.push({ type: 'kill', enemy: e.type });
 }
@@ -352,30 +354,18 @@ function updatePlayer(dt) {
   p.wallSliding = !p.grounded && p.vy > 0 && ((wallL && dir < 0) || (wallR && dir > 0));
   if (p.wallSliding) { p.vy = Math.min(p.vy, tune.wall_slide_speed); p.f = wallL ? 1 : -1; p.airAttacks = tune.air_attacks; p.airDashes = tune.air_dashes; }
 
-  // Dash (SHIFT): WASD escolhe a direção (8 direções); sem tecla, vai para o mouse
+  // Dash (SHIFT): para onde o mouse aponta, como o soco
   if (anyHit('ShiftLeft', 'ShiftRight') && p.dashCd <= 0 && (p.grounded || p.airDashes > 0) && (!p.rolling || !rectHits(p.x, p.y - 10, p.w, 20))) {
     if (p.rolling) endRoll(p);
-    const ky = (anyDown('KeyW', 'ArrowUp') ? -1 : 0) + (anyDown('KeyS', 'ArrowDown') ? 1 : 0);
-    let ang = (dir !== 0 || ky !== 0) ? Math.atan2(ky, dir) : (p.f > 0 ? 0 : Math.PI); // sem tecla: pro lado que está olhando
+    let ang = p.aim;
     if (p.grounded && Math.sin(ang) > 0.2) ang = Math.cos(ang) >= 0 ? 0 : Math.PI; // no chão, para baixo vira horizontal
     if (!p.grounded) p.airDashes--;
     p.vx = Math.cos(ang) * tune.dash_speed; p.vy = Math.sin(ang) * tune.dash_speed;
     p.dashT = tune.dash_duration; p.dashKind = 'dash'; p.invT = tune.dash_duration + 0.04; p.dashCd = tune.dash_cooldown; p.noCut = true;
-    p.dashGrace = (dir === 0 && ky === 0) ? 0.07 : 0; // apertou Shift antes da direção: ainda dá para virar
     if (Math.abs(Math.cos(ang)) > 0.2) p.f = Math.cos(ang) > 0 ? 1 : -1;
     if (p.grounded && Math.sin(ang) < -0.2) p.grounded = false;
     sfx.dash(); sparks(p.x + p.w / 2, p.y + p.h / 2, PAL.neonB, 8); state.shake = Math.max(state.shake, 1);
     events.push({ type: 'dash' });
-  }
-  if (p.dashKind === 'dash' && p.dashGrace > 0) {
-    p.dashGrace -= dt;
-    const ky = (anyDown('KeyW', 'ArrowUp') ? -1 : 0) + (anyDown('KeyS', 'ArrowDown') ? 1 : 0);
-    if (dir !== 0 || ky !== 0) {
-      let ang = Math.atan2(ky, dir);
-      if (p.grounded && Math.sin(ang) > 0.2) ang = Math.cos(ang) >= 0 ? 0 : Math.PI;
-      p.vx = Math.cos(ang) * tune.dash_speed; p.vy = Math.sin(ang) * tune.dash_speed; p.dashGrace = 0;
-      if (Math.abs(Math.cos(ang)) > 0.2) p.f = Math.cos(ang) > 0 ? 1 : -1;
-    }
   }
 
   // Golpe na direção do mouse
@@ -395,7 +385,7 @@ function updatePlayer(dt) {
     }
     if (p.grounded && sn < -0.2) p.grounded = false;
     state.slashes.push({ ang, t: 0.16, max: 0.16 });
-    sfx.swing();
+    sfx.punch();
   }
   if (p.attackT > 0) {
     p.attackT -= dt;
@@ -406,7 +396,7 @@ function updatePlayer(dt) {
       for (const b of state.bullets) if (b.enemy && Math.hypot(b.x - cx, b.y - cy) < rad * 1.3) {
         const s = Math.hypot(b.vx, b.vy) * tune.deflect_speed_mult;
         b.enemy = false; b.vx = cs * s; b.vy = sn * s; b.life = 2; b.deflected = true;
-        sparks(b.x, b.y, PAL.neonC, 10); sfx.deflect(); state.hitstop = Math.max(state.hitstop, 0.08); state.flash = 0.08;
+        sparks(b.x, b.y, PAL.neonC, 10); sfx.deflect(); state.rings.push({ x: b.x, y: b.y, t: 0.2, max: 0.2, rot: 0 }); state.hitstop = Math.max(state.hitstop, 0.08); state.flash = 0.08;
         events.push({ type: 'deflect' });
       }
     }
@@ -555,6 +545,8 @@ function updateParts(dt) {
   state.ghosts = state.ghosts.filter(g => g.life > 0);
   for (const s of state.slashes) s.t -= dt;
   state.slashes = state.slashes.filter(s => s.t > 0);
+  for (const g of state.rings) g.t -= dt;
+  state.rings = state.rings.filter(g => g.t > 0);
 }
 
 // ---- Sprites: painted into a small canvas, then outlined --------------------------------
@@ -606,7 +598,9 @@ function paintFigure(a, pal, pose) {
   if (isG) { r(-1 + lean, -18 + y0, 3, 2, '#dcdcdc'); r(0 + lean, -17 + y0, 1, 6, pal.accent); }
   if (isP) { r(-3 + lean, -18 + y0, 6, 2, pal.accent); } // gola/cachecol
   head(-3 + lean, -24 + y0);
-  if (pose === 'attack') {
+  if (pose === 'attack' && a.liveFist) { // braço de trás em guarda; o braço do soco é desenhado à parte, na direção do mouse
+    r(-3, -16 + y0, 2, 5, pal.coatD); r(-3, -12 + y0, 3, 3, pal.glove);
+  } else if (pose === 'attack') {
     if (a.aimY < 0) { r(1, -28 + y0, 3, 10, pal.coat); r(1, -30 + y0, 3, 3, pal.glove); }
     else if (a.aimY > 0) { r(2, -12 + y0, 8, 3, pal.coat); r(10, -11 + y0, 3, 3, pal.glove); }
     else { r(3, -16 + y0, 8, 3, pal.coat); r(11, -16 + y0, 3, 3, pal.glove); }
@@ -743,14 +737,36 @@ function drawRain() {
     ctx.fillRect(Math.round(x), Math.round(y), 1, 5);
   }
 }
-function drawSlashes() {
-  const p = state.p, cx = p.x + p.w / 2 - camX, cy = p.y + p.h / 2 - camY, r = tune.attack_reach;
-  for (const s of state.slashes) {
-    const k = s.t / s.max, sweep = 1.25, start = s.ang - sweep, end = s.ang - sweep + (1 - k * 0.6) * sweep * 2;
-    ctx.lineCap = 'butt';
-    ctx.strokeStyle = `rgba(46,230,255,${0.5 * k})`; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(cx, cy, r, start, end); ctx.stroke();
-    ctx.strokeStyle = `rgba(255,255,255,${k})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, r + 1, start + 0.15, end); ctx.stroke();
-    ctx.strokeStyle = `rgba(255,46,136,${0.6 * k})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, r - 4, start + 0.3, end - 0.1); ctx.stroke();
+function drawPunches() { // braço que dispara na direção do mouse, punho com contorno, linhas de velocidade e estouro
+  const p = state.p;
+  if (p.alive) for (const sl of state.slashes) {
+    const k = 1 - sl.t / sl.max, ext = k < 0.35 ? k / 0.35 : 1 - (k - 0.35) / 0.65 * 0.7;
+    const cs = Math.cos(sl.ang), sn = Math.sin(sl.ang);
+    const sx = p.x + p.w / 2 - camX + (cs >= 0 ? 1 : -1), sy = p.y + Math.min(6, p.h / 2) - camY + 1;
+    const len = 3 + ext * tune.attack_reach, fx = sx + cs * len, fy = sy + sn * len;
+    if (k < 0.5) {
+      ctx.fillStyle = `rgba(255,255,255,${0.7 * (1 - k * 2)})`;
+      for (const o of [-3, 0, 3]) for (let i = 5; i < 13; i++) ctx.fillRect(Math.round(fx - cs * i * 1.5 - sn * o), Math.round(fy - sn * i * 1.5 + cs * o), 1, 1);
+    }
+    ctx.fillStyle = PAL.outline;
+    for (let i = 0; i <= len; i++) ctx.fillRect(Math.round(sx + cs * i) - 2, Math.round(sy + sn * i) - 2, 5, 5);
+    ctx.fillStyle = PAL.player.coat;
+    for (let i = 0; i <= len; i++) ctx.fillRect(Math.round(sx + cs * i) - 1, Math.round(sy + sn * i) - 1, 3, 3);
+    const gx = Math.round(fx), gy = Math.round(fy);
+    ctx.fillStyle = PAL.outline; ctx.fillRect(gx - 3, gy - 3, 7, 7);
+    ctx.fillStyle = PAL.player.glove; ctx.fillRect(gx - 2, gy - 2, 5, 5);
+    ctx.fillStyle = '#9a7a8c'; ctx.fillRect(gx + (cs >= 0 ? 1 : -2), gy - 2, 2, 5); // nós dos dedos
+    if (k > 0.3 && k < 0.6) {
+      ctx.strokeStyle = `rgba(255,240,200,${1 - (k - 0.3) / 0.3})`; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(fx + cs * 4, fy + sn * 4, 2 + (k - 0.3) * 30, 0, 7); ctx.stroke();
+    }
+  }
+  for (const g of state.rings) { // estouro do impacto
+    const k = 1 - g.t / g.max;
+    ctx.strokeStyle = `rgba(255,210,63,${1 - k})`; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(g.x - camX, g.y - camY, 3 + k * 16, 0, 7); ctx.stroke();
+    ctx.fillStyle = `rgba(255,255,255,${1 - k})`;
+    for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + g.rot, d = 6 + k * 14; ctx.fillRect(Math.round(g.x - camX + Math.cos(a) * d) - 1, Math.round(g.y - camY + Math.sin(a) * d) - 1, 2, 2); }
   }
 }
 function poseOf(a) {
@@ -787,7 +803,7 @@ function drawWorld() {
   if (p.alive) for (let i = 0; i < p.scarf.length; i++) { const s = p.scarf[i]; ctx.fillStyle = i % 2 ? PAL.player.accent : '#c41e3e'; ctx.fillRect(Math.round(s.x - camX) - 1, Math.round(s.y - camY), 2, 2); }
   drawFigure(p, PAL.player, poseOf(p));
   if (p.held && p.alive) drawItem(p.held);
-  drawSlashes();
+  drawPunches();
   for (const b of state.bullets) {
     const tx = Math.round(b.x - camX), ty = Math.round(b.y - camY), k = 0.02, col = b.enemy ? PAL.neonC : b.deflected ? PAL.neonB : '#ffffff';
     ctx.strokeStyle = col; ctx.globalAlpha = 0.5; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(tx - b.vx * k, ty - b.vy * k); ctx.stroke(); ctx.globalAlpha = 1;
