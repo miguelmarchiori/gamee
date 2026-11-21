@@ -55,9 +55,10 @@ O primeiro aperto é na segunda sala: dois atiradores cobrindo um corredor, a pa
 - Um golpe ou um tiro mata o Zack, e a sala recomeça na hora.
 
 ## Features
-- [x] Movimento: corrida, pulo e pulo duplo, pulo na parede, rolamento invencível e 2 dashes no ar mirados no mouse
-- [x] Combate de um golpe: soco mirado no mouse que rebate balas; pegar, arremessar e atirar com garrafa, faca e pistola
-- [x] 2 tipos de inimigo: capanga de faca e atirador com laser de mira
+<!-- Os itens 1 a 3 foram feitos e aprovados no teste do navegador (prototypes/mercenario-spike-2026-11-20/), mas ainda não existem no Godot: voltam para [ ] até as stories 001 a 003 levarem eles para o projeto. -->
+- [ ] Movimento: corrida, pulo e pulo duplo, pulo na parede, rolamento invencível e 2 dashes no ar mirados no mouse
+- [ ] Combate de um golpe: soco mirado no mouse que rebate balas; pegar, arremessar e atirar com garrafa, faca e pistola
+- [ ] 2 tipos de inimigo: capanga de faca e atirador com laser de mira
 - [ ] Contrato 1 completo (Galeria, Santa Ifigênia): várias salas e o alvo no fim
 - [ ] Mensagens do Despachante no celular entre os contratos
 - [ ] Contratos 2 a 4 (Minhocão, Liberdade, Faria Lima), com um tipo de inimigo novo por contrato
