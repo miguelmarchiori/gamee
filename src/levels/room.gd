@@ -58,6 +58,15 @@ func point_solid(p: Vector2) -> bool:
 	return is_solid(floori(p.x / TILE), floori(p.y / TILE))
 
 
+## True when nothing solid stands between two world points (checked every 4 px).
+func line_clear(from: Vector2, to: Vector2) -> bool:
+	var steps := ceili(from.distance_to(to) / 4.0)
+	for i in range(1, steps):
+		if point_solid(from.lerp(to, float(i) / steps)):
+			return false
+	return true
+
+
 ## True when a world rectangle overlaps any solid cell.
 func rect_hits(r: Rect2) -> bool:
 	var c0 := floori(r.position.x / TILE)

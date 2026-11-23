@@ -51,5 +51,22 @@
     "hitstop": 0.05,
     "deflect_hitstop": 0.08,
     "shake": 3
+  },
+  "enemies": {
+    "thug_patrol_speed": 35,
+    "thug_chase_speed": 115,
+    "thug_sight": 150,
+    "thug_sight_height": 30,
+    "thug_windup": 0.32,
+    "thug_reach": 18,
+    "thug_slash_time": 0.12,
+    "thug_slash_step": 60,
+    "thug_recover": 0.45,
+    "gunner_sight": 230,
+    "gunner_aim_time": 0.65,
+    "gunner_lock_time": 0.15,
+    "gunner_cooldown": 1.1,
+    "gunner_lose_sight": 0.3,
+    "enemy_bullet_speed": 290
   }
 }

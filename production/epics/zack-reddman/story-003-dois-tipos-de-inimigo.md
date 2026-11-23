@@ -1,13 +1,13 @@
 # Story 003: Dois tipos de inimigo no Godot
 
 > **Epic**: Zack Reddman
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Build step**: core
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
+> **Last Updated**: 2026-11-23
 
 ## Context
 
@@ -59,10 +59,11 @@
 
 - `src/enemies/thug.gd`
 - `src/enemies/gunner.gd`
-- `assets/data/enemy_tuning.tres`
-- `tests/unit/enemies/enemies_state_machine_test.gd`
-
----
+- `src/enemies/enemy.gd`
+- `src/levels/room.gd`
+- `src/levels/room_session.gd`
+- `src/levels/test_room.gd`
+- `assets/data/tuning.json`
 
 ## QA Test Cases
 

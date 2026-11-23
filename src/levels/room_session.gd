@@ -34,7 +34,7 @@ var deaths := 0
 ## Seconds since the room (re)started, while Zack is alive and it is not clear.
 var elapsed := 0.0
 var is_cleared := false
-## Builds an enemy for a kind ("thug", "gunner"); when unset, the base Enemy stands still.
+## Builds an enemy for a kind ("thug", "gunner"); when unset, Thug and Gunner are used.
 var enemy_factory: Callable
 
 var _hitstop := 0.0
@@ -111,7 +111,11 @@ func restart() -> void:
 	for letter: String in ENEMY_LETTERS:
 		for feet: Vector2 in room.spawns(letter):
 			var kind: String = ENEMY_LETTERS[letter]
-			var enemy: Enemy = enemy_factory.call(kind) if enemy_factory.is_valid() else Enemy.new()
+			var enemy: Enemy
+			if enemy_factory.is_valid():
+				enemy = enemy_factory.call(kind)
+			else:
+				enemy = Thug.new() if kind == "thug" else Gunner.new()
 			enemy.kind = kind
 			enemy.session = self
 			enemy.position = feet

@@ -1,7 +1,7 @@
 extends Node2D
-## The gray test room (the approved spike's room) to try every move and the
-## combat. Run with `-- --demo=move` or `-- --demo=combat` for the scripted
-## evidence runs saved under production/qa/evidence/.
+## The gray test room (the approved spike's room) to try every move, the combat
+## and the enemies. Run with `-- --demo=move`, `-- --demo=combat` or
+## `-- --demo=enemies` for the scripted evidence runs in production/qa/evidence/.
 
 const ROOM_PATH := "res://assets/data/rooms/test_room.json"
 const HELP := "A D mover · W/Espaço pular (2x no ar) · S rolar · Shift dash · clique soco · direito/E pegar/arremessar · R recomeçar"
@@ -41,6 +41,8 @@ func _physics_process(_delta: float) -> void:
 			_demo_move()
 		"combat":
 			_demo_combat()
+		"enemies":
+			_demo_enemies()
 
 
 func _label(parent: Node, pos: Vector2) -> Label:
@@ -126,3 +128,14 @@ func _demo_combat() -> void:
 			_tap("attack")  # punch the bullet back
 		205:
 			session.spawn_bullet(zack.chest() + Vector2(60, 0), Vector2(-290, 0), true)
+
+
+## Story 003: the ground thug patrols, sees Zack, warns and stabs him; after the
+## restart a gunner aims with its laser, locks and shoots.
+func _demo_enemies() -> void:
+	var zack := session.zack
+	match _frame:
+		40:
+			zack.global_position = Vector2(330, 256)  # in front of the ground thug
+		130:
+			zack.global_position = Vector2(560, 256)  # in sight of the far gunner, on the floor
