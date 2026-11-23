@@ -1,0 +1,17 @@
+Reviewed-Content-Hash: src/levels/contract_level.gd 6b930a49388ce2c4fe33dc50734bfcb7ce422094
+Reviewed-Content-Hash: src/levels/contract_1_galeria.tscn 8af1ddf2e6d3deb6223a9850e0818b3adcdbe171
+Reviewed-Content-Hash: src/levels/room.gd ed21faa2b2106917bf597606677bd6c2d8e01b0d
+Reviewed-Content-Hash: src/levels/backdrop.gd 5f3fb7790dc46949c9a6f413d91feb0f5ae49654
+Reviewed-Content-Hash: src/levels/room_lights.gd dcb120b35527e6b4322c3f5bd50fde688cccc817
+Reviewed-Content-Hash: src/levels/room_session.gd db8153695c8116a968ae0f3a946877b72dee2b4b
+Reviewed-Content-Hash: src/enemies/receptador.gd 5e8191eb4c3d84130dce2ae673fb129e580649b2
+Reviewed-Content-Hash: src/enemies/thug.gd 01c59fcbdef03f2b33ca004f5038fff5d87207c9
+Reviewed-Content-Hash: src/art/figure_painter.gd 500166a5fccd9603684e2ca8e6ea902557789685
+Reviewed-Content-Hash: src/ui/hud.gd f69b53a64c5587b9ea4f48c88cd47868956dec0e
+Reviewed-Content-Hash: src/ui/phone_message.gd b1d121a6d480c47f53e5a534cbfc28db1e2defdd
+Reviewed-Content-Hash: assets/data/contracts/contract_1.json 4757b6ec878002fb2a9bcf6db03a675f6a10dc20
+Reviewed-Content-Hash: assets/data/rooms/contract_1/room_1.json 994265b5913ecd2a921dee023cbc97f54b054275
+Reviewed-Content-Hash: assets/data/rooms/contract_1/room_2.json d6f217f45ea45a0a9c39118762557995923742c9
+Reviewed-Content-Hash: assets/data/rooms/contract_1/room_3.json da4f1ca8a1f90a7f9ca16baaa5d222030ab71d74
+Reviewed-Content-Hash: assets/data/rooms/contract_1/room_4.json 1bfc51f5d2e4c1979a9e7b055367ed11a5b71d05
+Reviewed-Content-Hash: project.godot a2057e9a4c2eb769b92e478b979f039946948c16

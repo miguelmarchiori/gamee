@@ -1,13 +1,13 @@
 # Story 004: Contrato 1: Galeria (Santa Ifigênia)
 
 > **Epic**: Zack Reddman
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: L
 > **Build step**: core
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
+> **Last Updated**: 2026-11-23
 
 ## Context
 
@@ -58,12 +58,23 @@
 
 ## Files
 
-- `src/levels/contract_1_galeria.tscn`
 - `src/levels/contract_level.gd`
+- `src/levels/contract_1_galeria.tscn`
+- `src/levels/room.gd`
+- `src/levels/backdrop.gd`
+- `src/levels/room_lights.gd`
+- `src/levels/room_session.gd`
+- `src/enemies/receptador.gd`
+- `src/enemies/thug.gd`
+- `src/art/figure_painter.gd`
 - `src/ui/hud.gd`
-- `tests/integration/levels/levels_contract_1_test.gd`
-
----
+- `src/ui/phone_message.gd`
+- `assets/data/contracts/contract_1.json`
+- `assets/data/rooms/contract_1/room_1.json`
+- `assets/data/rooms/contract_1/room_2.json`
+- `assets/data/rooms/contract_1/room_3.json`
+- `assets/data/rooms/contract_1/room_4.json`
+- `project.godot`
 
 ## QA Test Cases
 

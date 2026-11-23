@@ -10,9 +10,12 @@ extends Node2D
 signal cleared
 ## Zack was hit; the room restarts after `feel.restart_delay`.
 signal player_died
+## The contract's target (the receptador) was killed.
+signal target_killed
 
 const ZACK_SCENE := preload("res://src/player/zack.tscn")
-const ENEMY_LETTERS := {"T": "thug", "G": "gunner"}
+## Spawn letter -> [kind, facing].
+const ENEMY_LETTERS := {"T": ["thug", -1], "Y": ["thug", 1], "G": ["gunner", -1], "H": ["gunner", 1], "R": ["receptador", -1]}
 const ITEM_LETTERS := {"b": "bottle", "k": "knife"}
 const ITEM_SIZE := {"bottle": Vector2(8, 6), "knife": Vector2(8, 6), "pistol": Vector2(8, 5)}
 const IMPACT := Color("#ffb347")
@@ -51,9 +54,17 @@ func setup(room_path: String) -> bool:
 	_room_path = room_path
 	process_physics_priority = -5
 	room = Room.new()
-	add_child(room)
 	if not room.load_room(room_path):
 		return false
+	if room.theme != "":
+		var backdrop := Backdrop.new()
+		backdrop.room = room
+		add_child(backdrop)
+	add_child(room)
+	if not room.lights.is_empty():
+		var lights := RoomLights.new()
+		lights.room = room
+		add_child(lights)
 	_actors = Node2D.new()
 	add_child(_actors)
 	_layer = Node2D.new()
@@ -110,13 +121,20 @@ func restart() -> void:
 	_actors.add_child(zack)
 	for letter: String in ENEMY_LETTERS:
 		for feet: Vector2 in room.spawns(letter):
-			var kind: String = ENEMY_LETTERS[letter]
+			var kind: String = ENEMY_LETTERS[letter][0]
 			var enemy: Enemy
 			if enemy_factory.is_valid():
 				enemy = enemy_factory.call(kind)
 			else:
-				enemy = Thug.new() if kind == "thug" else Gunner.new()
+				match kind:
+					"gunner":
+						enemy = Gunner.new()
+					"receptador":
+						enemy = Receptador.new()
+					_:
+						enemy = Thug.new()
 			enemy.kind = kind
+			enemy.facing = ENEMY_LETTERS[letter][1]
 			enemy.session = self
 			enemy.position = feet
 			_actors.add_child(enemy)
@@ -193,8 +211,11 @@ func kill_enemy(enemy: Enemy, dir_x: float, dir_y := -0.4) -> void:
 		var pistol := _new_item("pistol", enemy.global_position + Vector2(0.0, -8.0), int(_t("combat", "pistol_ammo")))
 		pistol["vel"] = Vector2(dir_x * 60.0, -160.0)
 		items.append(pistol)
+	if enemy.kind == "receptador":
+		target_killed.emit()
 	if not is_cleared and enemies_left() == 0:
 		is_cleared = true
+		room.open_doors()
 		cleared.emit()
 
 

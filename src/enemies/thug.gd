@@ -17,6 +17,11 @@ func _init() -> void:
 	kind = "thug"
 
 
+func _ready() -> void:
+	super._ready()
+	_dir = facing
+
+
 func _think(delta: float) -> void:
 	var zack := session.zack
 	var dx := zack.global_position.x - global_position.x

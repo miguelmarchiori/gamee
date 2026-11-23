@@ -23,6 +23,14 @@ const THUG := {
 	"accent": Color("#d8d0b8"), "boots": Color("#1a1a1a"), "boots_hi": Color("#444444"),
 	"glove": Color("#c98e6a"), "belt": Color("#2a1a0a"),
 }
+## The receptador (Contract 1's target): white shirt, dark trousers, bald, gold chain.
+const RECEPTADOR := {
+	"coat": Color("#d8d2c4"), "coat_d": Color("#a8a294"), "coat_hi": Color("#f2ede2"),
+	"pants": Color("#2a2a30"), "pants_d": Color("#1c1c22"),
+	"skin": Color("#c48a64"), "skin_d": Color("#946044"), "hair": Color("#2a1a12"),
+	"accent": Color("#d4a84a"), "boots": Color("#3a2a1e"), "boots_hi": Color("#5a4430"),
+	"glove": Color("#c48a64"), "belt": Color("#1a1208"),
+}
 const GUNNER := {
 	"coat": Color("#2e3440"), "coat_d": Color("#1d222b"), "coat_hi": Color("#56606f"),
 	"pants": Color("#1d222b"), "pants_d": Color("#13171e"),
@@ -36,7 +44,7 @@ const GUNNER := {
 ## hold phase, vx, landed, aim_y, roll_progress, flip, live_fist, tint and alpha:
 ## a tint draws a flat silhouette (afterimages) instead of the outlined figure.
 static func paint(canvas: CanvasItem, feet: Vector2, facing: int, pose: String, kind: String, state: Dictionary = {}) -> void:
-	var pal: Dictionary = {"zack": ZACK, "thug": THUG, "gunner": GUNNER}.get(kind, ZACK)
+	var pal: Dictionary = {"zack": ZACK, "thug": THUG, "gunner": GUNNER, "receptador": RECEPTADOR}.get(kind, ZACK)
 	var p := _shared
 	p.reset(feet.round(), 1 if facing >= 0 else -1)
 	match pose:
@@ -133,6 +141,9 @@ static func _standing(p: _Rects, pal: Dictionary, kind: String, pose: String, s:
 	if kind == "gunner":
 		p.r(-1 + lean, -18 + y0, 3, 2, Color("#dcdcdc"))
 		p.r(0 + lean, -17 + y0, 1, 6, pal["accent"])
+	if kind == "receptador":  # gold chain over the open collar
+		p.r(-2 + lean, -17 + y0, 4, 1, pal["accent"])
+		p.r(-1 + lean, -16 + y0, 2, 1, pal["accent"])
 	if kind == "zack":  # hood down on the back, hoodie pocket
 		p.r(-5 + lean, -19 + y0, 4, 3, pal["coat_d"])
 		p.r(-4 + lean, -12 + y0, 8, 1, pal["coat_d"])
@@ -162,6 +173,10 @@ static func _head(p: _Rects, pal: Dictionary, kind: String, hx: float, hy: float
 			p.r(hx - 1, hy + 2, 2, 2, Color("#1a1208"))
 			p.r(hx + 4, hy + 3, 1, 1, Color("#111111"))
 			p.r(hx + 1, hy + 5, 4, 1, Color("#5a3a28"))
+		"receptador":
+			p.r(hx + 1, hy, 4, 1, Color("#dca07a"))  # shine on the bald head
+			p.r(hx + 4, hy + 3, 1, 1, Color("#111111"))
+			p.r(hx + 2, hy + 4, 4, 1, pal["hair"])  # moustache
 		"gunner":
 			p.r(hx, hy - 1, 6, 2, pal["hair"])
 			p.r(hx - 1, hy, 1, 3, pal["hair"])
