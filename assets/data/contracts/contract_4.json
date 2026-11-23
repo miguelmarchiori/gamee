@@ -1,0 +1,10 @@
+{
+  "id": "contract_4",
+  "title": "CONTRATO 4",
+  "place": "Faria Lima (esqueleto)",
+  "intro_message": "contract_4_intro",
+  "target": "",
+  "rooms": [
+    "res://assets/data/rooms/thin/contract_4.json"
+  ]
+}

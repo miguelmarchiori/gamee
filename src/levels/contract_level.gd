@@ -45,7 +45,10 @@ func _ready() -> void:
 	_phone = PhoneMessage.new()
 	add_child(_phone)
 	_phone.dismissed.connect(_on_intro_closed)
-	_phone.open(contract.get("intro", []))
+	var msg: Dictionary = {"sender": "DESPACHANTE", "lines": contract.get("intro", [])}
+	if contract.has("intro_message"):
+		msg = Messages.get_message(contract["intro_message"])
+	_phone.open(msg["lines"], msg["sender"])
 	_demo = "--demo=contract" in OS.get_cmdline_user_args()
 
 
@@ -89,6 +92,8 @@ func _on_player_died() -> void:
 func _on_cleared() -> void:
 	if room_index < _rooms().size() - 1:
 		_hud.message(tr("SALA LIMPA · siga pela porta →"), Hud.AMBER)
+	elif contract.get("target", "") == "":  # a contract with no marked target ends when its last room is clear
+		_finish()
 
 
 func _on_target_killed() -> void:
@@ -138,7 +143,8 @@ func _finish() -> void:
 	for t in room_times:
 		total += t
 	_text(_done, tr("CONTRATO CUMPRIDO"), Vector2(0, 54), 16, Hud.TEXT)
-	_text(_done, tr("%s · alvo eliminado") % contract.get("place", ""), Vector2(0, 80), 8, Hud.AMBER)
+	var outcome := tr("%s · alvo eliminado") if contract.get("target", "") != "" else tr("%s · sala limpa")
+	_text(_done, outcome % contract.get("place", ""), Vector2(0, 80), 8, Hud.AMBER)
 	_text(_done, "\n".join(lines), Vector2(0, 100), 8, Hud.TEXT)
 	_text(_done, tr("TOTAL %.2fs · MORTES %d") % [total, deaths], Vector2(0, 100 + lines.size() * 12 + 10), 8, Hud.TEXT)
 	_text(_done, tr("clique ou Enter para continuar"), Vector2(0, 228), 8, Color(Hud.TEXT, 0.6))

@@ -41,10 +41,10 @@ func _ready() -> void:
 
 ## Shows `lines` from `sender` until the player closes it.
 func open(lines: Array, sender := "DESPACHANTE") -> void:
-	_sender.text = tr("MENSAGEM · %s") % sender
+	_sender.text = tr("MENSAGEM · %s") % sender if sender != "" else ""
 	var body := PackedStringArray()
 	for line: String in lines:
-		body.append(line.trim_prefix(sender + ": "))
+		body.append(line.trim_prefix(sender + ": ") if sender != "" else line)
 	_text.text = "\n".join(body)
 	is_open = true
 	_opened_frame = Engine.get_process_frames()

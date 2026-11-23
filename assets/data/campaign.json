@@ -1,0 +1,9 @@
+{
+  "steps": [
+    "res://assets/data/contracts/contract_1.json",
+    "res://assets/data/contracts/contract_2.json",
+    "res://assets/data/contracts/contract_3.json",
+    "res://assets/data/contracts/contract_4.json",
+    "final"
+  ]
+}

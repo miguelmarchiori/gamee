@@ -1,0 +1,10 @@
+{
+  "id": "contract_3",
+  "title": "CONTRATO 3",
+  "place": "Liberdade (esqueleto)",
+  "intro_message": "contract_3_intro",
+  "target": "",
+  "rooms": [
+    "res://assets/data/rooms/thin/contract_3.json"
+  ]
+}

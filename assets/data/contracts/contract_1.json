@@ -2,16 +2,12 @@
   "id": "contract_1",
   "title": "CONTRATO 1",
   "place": "Galeria · Santa Ifigênia",
-  "intro": [
-    "DESPACHANTE: Galeria na Santa Ifigênia, terceiro andar.",
-    "Um receptador está devendo para o cliente. Cobra do jeito de sempre.",
-    "Sem testemunha. O resto do dinheiro quando acabar."
-  ],
   "target": "receptador",
   "rooms": [
     "res://assets/data/rooms/contract_1/room_1.json",
     "res://assets/data/rooms/contract_1/room_2.json",
     "res://assets/data/rooms/contract_1/room_3.json",
     "res://assets/data/rooms/contract_1/room_4.json"
-  ]
+  ],
+  "intro_message": "contract_1_intro"
 }

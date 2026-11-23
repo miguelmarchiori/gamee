@@ -1,13 +1,13 @@
 # Story 005: Fluxo de contratos com o Despachante (fino)
 
 > **Epic**: Zack Reddman
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: M
 > **Build step**: thin — contratos que levam à história e ao final
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
+> **Last Updated**: 2026-11-23
 
 ## Context
 
@@ -57,13 +57,22 @@
 
 ## Files
 
-- `src/flow/contract_flow.gd`
-- `src/ui/phone_message.tscn`
-- `src/ui/title_screen.tscn`
+- `src/flow/game.gd`
+- `src/flow/game.tscn`
+- `src/ui/title_screen.gd`
+- `src/ui/phone_message.gd`
+- `src/core/messages.gd`
+- `src/levels/contract_level.gd`
 - `assets/data/dispatcher_messages.json`
-- `tests/integration/flow/flow_contract_sequence_test.gd`
-
----
+- `assets/data/campaign.json`
+- `assets/data/contracts/contract_1.json`
+- `assets/data/contracts/contract_2.json`
+- `assets/data/contracts/contract_3.json`
+- `assets/data/contracts/contract_4.json`
+- `assets/data/rooms/thin/contract_2.json`
+- `assets/data/rooms/thin/contract_3.json`
+- `assets/data/rooms/thin/contract_4.json`
+- `project.godot`
 
 ## QA Test Cases
 

@@ -1,0 +1,10 @@
+{
+  "id": "contract_2",
+  "title": "CONTRATO 2",
+  "place": "Debaixo do Minhocão (esqueleto)",
+  "intro_message": "contract_2_intro",
+  "target": "",
+  "rooms": [
+    "res://assets/data/rooms/thin/contract_2.json"
+  ]
+}

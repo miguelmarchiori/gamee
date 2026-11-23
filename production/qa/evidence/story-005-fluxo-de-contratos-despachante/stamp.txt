@@ -1,0 +1,16 @@
+Reviewed-Content-Hash: src/flow/game.gd 46c5dc8a3e1e5bbe697ff78abc9ba3d1de4feed4
+Reviewed-Content-Hash: src/flow/game.tscn fb00b447a1af4320b1b65e615cd64716d8929532
+Reviewed-Content-Hash: src/ui/title_screen.gd eeeb0fba1fa74d62696c872a8c7c74cbc66a6791
+Reviewed-Content-Hash: src/ui/phone_message.gd acc7b66ce7594fa05e4f0b42eaded9406ffe6cf7
+Reviewed-Content-Hash: src/core/messages.gd 77101c333ffaddec641a93133e19e562694b4d0d
+Reviewed-Content-Hash: src/levels/contract_level.gd 3d2077e3047dd17ff29b8748459497c2f8542b92
+Reviewed-Content-Hash: assets/data/dispatcher_messages.json ce54733f13eb6f989864893184a2412b02cc53d7
+Reviewed-Content-Hash: assets/data/campaign.json 4fc80b74820f87e760bf177db682884a1ff9f9a4
+Reviewed-Content-Hash: assets/data/contracts/contract_1.json 60648151017fc86d753c208bea25b18b6fbd6855
+Reviewed-Content-Hash: assets/data/contracts/contract_2.json faf3f4355e7a0bc6586efbe5873f25601ab7c352
+Reviewed-Content-Hash: assets/data/contracts/contract_3.json 13277eda67f7ba7de61d93cfdadaba8e9faea1da
+Reviewed-Content-Hash: assets/data/contracts/contract_4.json 4fcfc11bf5e446fc27eace981719a0b928d897b0
+Reviewed-Content-Hash: assets/data/rooms/thin/contract_2.json 4cfeb8d739164de21ccf1b06831bee9ab83d60e3
+Reviewed-Content-Hash: assets/data/rooms/thin/contract_3.json 4e165c80b6ba9a3d8166f590b3eb2e198efce19b
+Reviewed-Content-Hash: assets/data/rooms/thin/contract_4.json df7fa11bbb0f8e8c129b3c46ab658cdcc87e4d55
+Reviewed-Content-Hash: project.godot 2fa708c74f26464b8c80e956309b06ebf214ae5f

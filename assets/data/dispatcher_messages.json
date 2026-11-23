@@ -1,0 +1,63 @@
+{
+  "canon": "Provisional — textos de esboço seguindo design/narrative/historia.md; nomes e falas podem mudar.",
+  "placeholders": {
+    "zack": "nome do protagonista",
+    "place": "lugar do contrato"
+  },
+  "messages": {
+    "contract_1_intro": {
+      "sender": "DESPACHANTE",
+      "lines": [
+        "Galeria na Santa Ifigênia, terceiro andar.",
+        "Um receptador está devendo para o cliente. Cobra do jeito de sempre.",
+        "Sem testemunha. O resto do dinheiro quando acabar."
+      ]
+    },
+    "contract_2_intro": {
+      "sender": "DESPACHANTE",
+      "lines": [
+        "Pagamento feito. Não pergunta de onde veio.",
+        "Próximo: um resolvedor de político, no estacionamento debaixo do Minhocão.",
+        "Ele anda com uns papéis que não são dele. Traz tudo, {zack}."
+      ]
+    },
+    "contract_3_intro": {
+      "sender": "DESPACHANTE",
+      "lines": [
+        "O cliente gostou do que você trouxe. Até do mapa.",
+        "Agora é uma hacker. Fica em cima de um karaokê na Liberdade.",
+        "Ela tem arquivos que não devia ter. Sem conversa."
+      ]
+    },
+    "contract_4_intro": {
+      "sender": "DESPACHANTE",
+      "lines": [
+        "Você deixou a menina viva. O cliente sabe.",
+        "Último serviço pra limpar teu nome: a torre na Faria Lima.",
+        "Vai sozinho. Eu cuido do resto."
+      ]
+    },
+    "final_intro": {
+      "sender": "DESPACHANTE",
+      "lines": [
+        "Desculpa, garoto. Era você ou eu.",
+        "Ela está no último prédio ocupado do Centro. Eles vão pôr fogo.",
+        "Igual da outra vez, {zack}."
+      ]
+    },
+    "ending": {
+      "sender": "",
+      "lines": [
+        "Zack tira a Lia do prédio. A estrutura cede, e ele fica para trás.",
+        "O mesmo fogo que levou a mãe dele.",
+        "Lia publica as provas. A Vértice cai no noticiário."
+      ]
+    },
+    "epilogue": {
+      "sender": "CELULAR DESCARTÁVEL",
+      "lines": [
+        "novo contrato disponível"
+      ]
+    }
+  }
+}
