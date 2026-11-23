@@ -55,7 +55,8 @@ func _on_contract_completed(result: Dictionary) -> void:
 
 
 ## The last step. In this thin version the Último Prédio is the Despachante's
-## last message and the ending screen (story 006); story 008 makes it playable.
+## last message, then the ending and the epilogue (EndingScreen, story 006);
+## story 008 makes the building playable.
 func _play_final() -> void:
 	var phone := PhoneMessage.new()
 	add_child(phone)
@@ -66,7 +67,11 @@ func _play_final() -> void:
 
 
 func _on_final_message_closed() -> void:
-	_show_title()
+	_clear()
+	var ending := EndingScreen.new()
+	add_child(ending)
+	ending.finished.connect(_show_title)
+	_current = ending
 
 
 func _clear() -> void:
@@ -86,6 +91,8 @@ func _process(_delta: float) -> void:
 	elif _current is ContractLevel and (_current as ContractLevel).phase == ContractLevel.Phase.DONE and _frame % 40 == 0:
 		_press("ui_accept")
 	elif _current is PhoneMessage and (_current as PhoneMessage).is_open and _frame % 40 == 0:
+		_press("ui_accept")
+	elif _current is EndingScreen and _frame % 360 == 0:
 		_press("ui_accept")
 
 

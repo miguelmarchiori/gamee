@@ -1,13 +1,13 @@
 # Story 006: Final trágico (fino)
 
 > **Epic**: Zack Reddman
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: S
 > **Build step**: thin — final trágico
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
+> **Last Updated**: 2026-11-23
 
 ## Context
 
@@ -52,10 +52,9 @@
 
 ## Files
 
-- `src/ui/ending_screen.tscn`
 - `src/ui/ending_screen.gd`
-
----
+- `src/ui/ending_screen.tscn`
+- `src/flow/game.gd`
 
 ## QA Test Cases
 
