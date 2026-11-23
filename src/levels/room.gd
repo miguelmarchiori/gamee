@@ -53,6 +53,24 @@ func is_solid(col: int, row: int) -> bool:
 	return _grid[row][col] == "#"
 
 
+## True when a world point is inside a solid cell.
+func point_solid(p: Vector2) -> bool:
+	return is_solid(floori(p.x / TILE), floori(p.y / TILE))
+
+
+## True when a world rectangle overlaps any solid cell.
+func rect_hits(r: Rect2) -> bool:
+	var c0 := floori(r.position.x / TILE)
+	var c1 := floori((r.end.x - 0.001) / TILE)
+	var r0 := floori(r.position.y / TILE)
+	var r1 := floori((r.end.y - 0.001) / TILE)
+	for row in range(r0, r1 + 1):
+		for col in range(c0, c1 + 1):
+			if is_solid(col, row):
+				return true
+	return false
+
+
 func _read_spawns() -> void:
 	_spawns.clear()
 	for row in rows:

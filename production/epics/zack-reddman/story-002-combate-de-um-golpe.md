@@ -1,13 +1,13 @@
 # Story 002: Combate de um golpe no Godot
 
 > **Epic**: Zack Reddman
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: L
 > **Build step**: core
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
+> **Last Updated**: 2026-11-23
 
 ## Context
 
@@ -57,14 +57,14 @@
 
 ## Files
 
-- `src/combat/punch.gd`
-- `src/combat/bullet.gd`
-- `src/combat/pickup_item.gd`
-- `src/rooms/room.gd`
-- `assets/data/combat_tuning.tres`
-- `tests/integration/combat/combat_one_hit_test.gd`
-
----
+- `src/player/zack.gd`
+- `src/levels/room_session.gd`
+- `src/levels/room.gd`
+- `src/combat/effects.gd`
+- `src/enemies/enemy.gd`
+- `src/core/game_camera.gd`
+- `src/levels/test_room.gd`
+- `assets/data/tuning.json`
 
 ## QA Test Cases
 

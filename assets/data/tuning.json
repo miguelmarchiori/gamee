@@ -32,5 +32,24 @@
     "lookahead": 50,
     "mouse_pull": 0.15,
     "follow_rate": 6
+  },
+  "combat": {
+    "attack_time": 0.2,
+    "attack_reach": 22,
+    "attack_dash": 170,
+    "attack_dash_time": 0.06,
+    "air_attacks": 1,
+    "attack_cooldown": 0.22,
+    "deflect_speed_mult": 1.6,
+    "pickup_radius": 22,
+    "throw_speed": 430,
+    "pistol_ammo": 3,
+    "player_bullet_speed": 560
+  },
+  "feel": {
+    "restart_delay": 0.45,
+    "hitstop": 0.05,
+    "deflect_hitstop": 0.08,
+    "shake": 3
   }
 }

@@ -1,51 +1,76 @@
 extends Node2D
-## Story 001's test room: the approved spike's room in gray, with Zack and the
-## camera, to try every move. Run with `-- --demo` for the scripted evidence run
-## (production/qa/evidence/story-001-movimento-no-godot/).
+## The gray test room (the approved spike's room) to try every move and the
+## combat. Run with `-- --demo=move` or `-- --demo=combat` for the scripted
+## evidence runs saved under production/qa/evidence/.
 
 const ROOM_PATH := "res://assets/data/rooms/test_room.json"
-const ZACK_SCENE := preload("res://src/player/zack.tscn")
-const HELP := "A D mover · W/Espaço pular (2x no ar, na parede escala) · S rolar / cair · Shift dash para o mouse · F11 tela cheia"
+const HELP := "A D mover · W/Espaço pular (2x no ar) · S rolar · Shift dash · clique soco · direito/E pegar/arremessar · R recomeçar"
+const ITEM_NAMES := {"": "-", "bottle": "garrafa", "knife": "faca", "pistol": "pistola"}
 
-var _zack: Zack
-var _demo := false
+var session: RoomSession
+var _status: Label
+var _demo := ""
 var _frame := 0
 
 
 func _ready() -> void:
-	process_physics_priority = -10  # the demo presses keys before Zack reads them
-	var room := Room.new()
-	add_child(room)
-	room.load_room(ROOM_PATH)
-	_zack = ZACK_SCENE.instantiate()
-	_zack.position = room.spawns("P")[0]
-	add_child(_zack)
-	var cam := GameCamera.new()
-	cam.target = _zack
-	cam.set_bounds(room.size_px())
-	add_child(cam)
-	cam.make_current()
-	cam.snap()
+	process_physics_priority = -10  # the demo presses keys before anyone reads them
+	session = RoomSession.new()
+	add_child(session)
+	session.setup(ROOM_PATH)
 	var hud := CanvasLayer.new()
-	var label := Label.new()
-	label.text = HELP
-	label.position = Vector2(6, 252)
-	label.add_theme_font_size_override("font_size", 8)
-	label.modulate = Color("#d8d4cc")
-	hud.add_child(label)
 	add_child(hud)
-	_demo = "--demo" in OS.get_cmdline_user_args()
+	_status = _label(hud, Vector2(6, 4))
+	_label(hud, Vector2(6, 256)).text = HELP
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--demo="):
+			_demo = arg.trim_prefix("--demo=")
 
 
 func _physics_process(_delta: float) -> void:
-	if _demo:
-		_demo_step()
-
-
-## Scripted inputs for the evidence capture: run, jump, double jump, dash up-right,
-## land, roll. Frame numbers are physics frames at 60 per second.
-func _demo_step() -> void:
+	var held := session.held_kind()
+	var held_text: String = ITEM_NAMES.get(held, held)
+	if held == "pistol":
+		held_text += " x%d" % session.held_ammo()
+	_status.text = "Alvos %d/%d · Mortes %d · %.2fs · Na mão: %s%s" % [
+		session.enemies_left(), session.enemies.size(), session.deaths, session.elapsed, held_text,
+		" · SALA LIMPA" if session.is_cleared else ""]
 	_frame += 1
+	match _demo:
+		"move":
+			_demo_move()
+		"combat":
+			_demo_combat()
+
+
+func _label(parent: Node, pos: Vector2) -> Label:
+	var label := Label.new()
+	label.position = pos
+	label.add_theme_font_size_override("font_size", 8)
+	label.modulate = Color("#d8d4cc")
+	parent.add_child(label)
+	return label
+
+
+func _enemy_near(world: Vector2) -> Enemy:
+	var best: Enemy = null
+	for e in session.enemies:
+		if e.alive and (best == null or e.global_position.distance_to(world) < best.global_position.distance_to(world)):
+			best = e
+	return best
+
+
+func _aim_at(world: Vector2) -> void:
+	session.zack.aim_override = world
+
+
+func _tap(action: String) -> void:
+	Input.action_press(action)
+	Input.action_release.call_deferred(action)
+
+
+## Story 001: run, jump, a second jump, dash up-right, roll.
+func _demo_move() -> void:
 	match _frame:
 		10:
 			Input.action_press("move_right")
@@ -54,17 +79,50 @@ func _demo_step() -> void:
 		52:
 			Input.action_release("jump")
 		58:
-			Input.action_press("jump")
-		59:
-			Input.action_release("jump")
+			_tap("jump")
 		76:
-			_zack.aim_override = _zack.global_position + Vector2(60.0, -50.0)
-			Input.action_press("dash")
-		77:
-			Input.action_release("dash")
+			_aim_at(session.zack.global_position + Vector2(60.0, -50.0))
+			_tap("dash")
 		120:
-			Input.action_press("down")
-		121:
-			Input.action_release("down")
+			_tap("down")
 		150:
 			Input.action_release("move_right")
+
+
+## Story 002: pick up the bottle and throw it at the first thug, punch the first
+## gunner (it drops its pistol), shoot the second thug with it, punch a bullet
+## back, then die to a bullet and watch the room restart.
+func _demo_combat() -> void:
+	var zack := session.zack
+	match _frame:
+		5:
+			Input.action_press("move_right")
+		14:
+			Input.action_release("move_right")
+		20:
+			_tap("interact")  # pick up the bottle
+		28:
+			zack.global_position = Vector2(170, 256)  # past the crate
+		32:
+			_aim_at(_enemy_near(Vector2(264, 256)).chest())
+			_tap("interact")  # throw it
+		80:
+			zack.global_position = Vector2(196, 160)  # next to the gunner on the platform
+			zack.velocity = Vector2.ZERO
+		90:
+			_aim_at(_enemy_near(Vector2(216, 160)).chest())
+			_tap("attack")
+		130:
+			zack.global_position = (session.items.back()["rect"] as Rect2).get_center() + Vector2(0, 3)
+		135:
+			_tap("interact")  # pick up the pistol
+		145:
+			_aim_at(_enemy_near(Vector2(376, 192)).chest())
+			_tap("interact")  # shoot
+		170:
+			session.spawn_bullet(zack.chest() + Vector2(60, 0), Vector2(-290, 0), true)
+		174:
+			_aim_at(zack.chest() + Vector2(60, 0))
+			_tap("attack")  # punch the bullet back
+		205:
+			session.spawn_bullet(zack.chest() + Vector2(60, 0), Vector2(-290, 0), true)

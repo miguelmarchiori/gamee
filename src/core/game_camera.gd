@@ -8,6 +8,14 @@ extends Camera2D
 ## The node to follow; it should have a `facing` property (1 or -1).
 var target: Node2D
 
+var _shake := 0.0
+var _rng := RandomNumberGenerator.new()
+
+
+## Shakes the view by up to `amount` pixels, fading out quickly.
+func shake(amount: float) -> void:
+	_shake = maxf(_shake, amount)
+
 
 ## Keeps the view inside a room of this size, in pixels.
 func set_bounds(size: Vector2) -> void:
@@ -29,6 +37,8 @@ func _physics_process(delta: float) -> void:
 		return
 	var rate := Tuning.value("camera", "follow_rate")
 	global_position = global_position.lerp(_goal(), minf(1.0, delta * rate))
+	_shake = maxf(0.0, _shake - delta * 20.0)
+	offset = Vector2(_rng.randf_range(-1.0, 1.0), _rng.randf_range(-1.0, 1.0)) * _shake
 
 
 func _goal() -> Vector2:
