@@ -4,8 +4,25 @@ config_version=5
 
 config/name="Zack Reddman"
 config/features=PackedStringArray("4.7", "Forward Plus")
-; run/main_scene is left unset on purpose: there is no scene yet. /dev-story or you set it once one exists.
+run/main_scene="res://src/levels/test_room.tscn"
+
+[autoload]
+
+Tuning="*res://src/core/tuning.gd"
+GameInput="*res://src/core/game_input.gd"
+
+[display]
+
+window/size/viewport_width=480
+window/size/viewport_height=270
+window/size/window_width_override=960
+window/size/window_height_override=540
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+window/stretch/scale_mode="integer"
 
 [rendering]
 
 renderer/rendering_method="forward_plus"
+textures/canvas_textures/default_texture_filter=0
+2d/snap/snap_2d_transforms_to_pixel=true

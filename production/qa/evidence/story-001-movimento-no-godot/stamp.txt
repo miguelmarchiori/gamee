@@ -1,0 +1,12 @@
+Reviewed-Content-Hash: src/player/zack.gd 9388f79998f1dc4c11101e5214f84b33d3a8bb6c
+Reviewed-Content-Hash: src/player/zack.tscn 850abd90b4ba39188a8f5a85169685b3478a2d7d
+Reviewed-Content-Hash: src/art/figure_painter.gd 550d21f778b579e6a8eeb462066ac63710fd5ba7
+Reviewed-Content-Hash: src/core/tuning.gd 4132737999d60257adc23e25188f661bec3a6f42
+Reviewed-Content-Hash: src/core/game_input.gd e41b05592726aace624c6558c04978afe3cf051e
+Reviewed-Content-Hash: src/core/game_camera.gd 9a97106fb145c269e3998fc86a37377d2ea10196
+Reviewed-Content-Hash: src/levels/room.gd 8d2d9b2b091dea9377720266678d0dd04f5c0466
+Reviewed-Content-Hash: src/levels/test_room.gd c9f8eb49ba122c342e6b9a68a714fdbb7be5802e
+Reviewed-Content-Hash: src/levels/test_room.tscn 2c9c953c1b814f8cf4da7e4710bef53a677fa65f
+Reviewed-Content-Hash: assets/data/tuning.json 74a7cf4c9dc057ddeec6ac7b372e7e398b16f332
+Reviewed-Content-Hash: assets/data/rooms/test_room.json cb9b67a45ebdfaae2382d2c5b72c03ca6f63cfa9
+Reviewed-Content-Hash: project.godot 3f936cc01ad24822dfbbccea7946e31a3e83ea6e

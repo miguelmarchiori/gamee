@@ -1,0 +1,13 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/player/zack.gd" id="1_zack"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(10, 20)
+
+[node name="Zack" type="CharacterBody2D"]
+script = ExtResource("1_zack")
+
+[node name="Body" type="CollisionShape2D" parent="."]
+position = Vector2(0, -10)
+shape = SubResource("RectangleShape2D_body")

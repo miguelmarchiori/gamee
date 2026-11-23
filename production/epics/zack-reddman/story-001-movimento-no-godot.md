@@ -1,13 +1,13 @@
 # Story 001: Movimento no Godot
 
 > **Epic**: Zack Reddman
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: L
 > **Build step**: core
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
+> **Last Updated**: 2026-11-23
 
 ## Context
 
@@ -61,10 +61,16 @@
 
 - `src/player/zack.gd`
 - `src/player/zack.tscn`
-- `assets/data/player_tuning.tres`
-- `tests/unit/player/player_movement_test.gd`
-
----
+- `src/art/figure_painter.gd`
+- `src/core/tuning.gd`
+- `src/core/game_input.gd`
+- `src/core/game_camera.gd`
+- `src/levels/room.gd`
+- `src/levels/test_room.gd`
+- `src/levels/test_room.tscn`
+- `assets/data/tuning.json`
+- `assets/data/rooms/test_room.json`
+- `project.godot`
 
 ## QA Test Cases
 
